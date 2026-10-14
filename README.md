@@ -99,4 +99,4 @@ Data cleaning, JOINs, GROUP BY / HAVING, subqueries, CTEs (including recursive),
 ## Author
 Ankita Kumari
 
-If you found this project useful, feel free to star the repo!
+If you found this project useful, feel free to ⭐ the repo!
