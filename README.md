@@ -14,6 +14,49 @@ Three tables in the `interview` database:
 | `customer` | 25 | Customer details, grade, outstanding amount, assigned agent |
 | `orders` | 36 | Orders with amount, advance paid, date, customer and agent |
 
+## Questions Covered
+
+### Segment 1: Database, Tables, Columns, Relationships
+| # | Question |
+|---|---|
+| 1.1 | Identify the tables and their columns |
+| 1.2 | Count the records in each table |
+| 1.3 | Identify and handle missing or inconsistent values |
+| 1.4 | Check that data types suit the stored data |
+| 1.5 | Identify duplicate records and define a handling strategy |
+
+### Segment 2: Basic Sales Analysis
+| # | Question |
+|---|---|
+| 2.1 | Total orders, total revenue and average order value |
+| 2.2 | Agent with the most high-grade (grade 5) customers |
+| 2.3 | Top 3 customer cities by total order amount |
+
+### Segment 3: Customer Analysis
+| # | Question |
+|---|---|
+| 3.1 | Total number of customers |
+| 3.2 | Top-spending customers by total order value |
+| 3.3 | Customer retention: percentage of repeat customers |
+| 3.4 | Customer with the maximum outstanding amount in each country |
+| 3.5 | Percentage of customers in each grade (1 to 5) |
+
+### Segment 4: Agent Performance Analysis
+| # | Question |
+|---|---|
+| 4.1 | Top 5 agents for a performance bonus |
+| 4.2 | Rank agents by number of orders handled |
+| 4.3 | Revised commission based on average advance amount collected |
+
+### Segment 5: SQL Tasks
+| # | Question |
+|---|---|
+| 5.1 | Add a column with the average receive amount per country |
+| 5.2 | User-defined function `avg_amt` (average outstanding amount for an agent) |
+| 5.3 | Stored procedure `cust_detail` (customers of a given grade) |
+| 5.4 | Stored procedure `sp_name` using a cursor (comma-separated order numbers of a customer) |
+
+
 ## Data Cleaning
 | Issue found | Fix |
 |---|---|
@@ -52,3 +95,8 @@ Data cleaning, JOINs, GROUP BY / HAVING, subqueries, CTEs (including recursive),
 ## How to Run
 1. Run `data_setup.sql` in MySQL Workbench.
 2. Run `sales_support_analysis.sql` once from top to bottom (MySQL 8.0+ required).
+
+## Author
+Ankita Kumari
+
+If you found this project useful, feel free to star the repo!
