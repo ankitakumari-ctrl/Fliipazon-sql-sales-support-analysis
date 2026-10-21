@@ -91,8 +91,8 @@ Data cleaning, JOINs, GROUP BY / HAVING, subqueries, CTEs (including recursive),
 ## Deliverables
 - `data_setup.sql`: creates the database, tables and data
 - `sales_support_analysis.sql`: cleaning and all analysis queries (Segments 1 to 5), commented and organised by task number
-- `docs/Sales and Support Analysis .docx`: detailed written analysis and interpretation of the results
-- `docs/Fliipazon_SQL_Analysis.pptx`: presentation of key findings and recommendations
+- `Sales and Support Analysis.docx`: detailed written analysis and interpretation of the results
+- `Fliipazon_SQL_Analysis.pptx`: presentation of key findings and recommendations
 
 ## How to Run
 1. Run `data_setup.sql` in MySQL Workbench.
