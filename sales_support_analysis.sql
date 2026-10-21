@@ -5,14 +5,13 @@
 */
 USE interview;
 
-SHOW TABLES;
-
 /* =====================================================================
    SEGMENT 1: DATABASE - TABLES, COLUMNS, RELATIONSHIPS
    ===================================================================== */
 -- 1.1 Tables and their columns (information schema)
-SELECT TABLE_NAME, ORDINAL_POSITION AS col_no, COLUMN_NAME, COLUMN_TYPE,
-       IS_NULLABLE, COLUMN_KEY
+SHOW TABLES;
+
+SELECT TABLE_NAME, ORDINAL_POSITION AS col_no, COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY
 FROM   information_schema.COLUMNS
 WHERE  TABLE_SCHEMA = 'interview'
 ORDER  BY TABLE_NAME, ORDINAL_POSITION;
@@ -26,21 +25,62 @@ SELECT 'orders' as table_name, COUNT(*) AS row_count FROM orders;
 
 -- 1.3 Missing / inconsistent values --------------------------------------
 -- analysing each character length and extra spaces in agents table
-SELECT agent_code, agent_name, working_area, phone_no,
+SELECT agent_code, agent_name, working_area, phone_no, country,
        CHAR_LENGTH(agent_code) AS code_len,
        CHAR_LENGTH(agent_name) AS name_len,
        CHAR_LENGTH(working_area) AS area_len,
        CHAR_LENGTH(phone_no) AS phone_len,
        CHAR_LENGTH(country) AS country_len
 FROM agents;
+
+SELECT *, 
+       CHAR_LENGTH(cust_code) AS code_len,
+       CHAR_LENGTH(cust_name) AS name_len,
+       CHAR_LENGTH(cust_city) AS city_len,
+       CHAR_LENGTH(working_area) AS area_len,
+       CHAR_LENGTH(cust_country) AS country_len,
+       CHAR_LENGTH(grade) AS grade_len,
+       CHAR_LENGTH(opening_amt) AS opening_amt_len,
+       CHAR_LENGTH(receive_amt) AS receive_amt_len,
+       CHAR_LENGTH(payment_amt) AS payment_amt_len,
+       CHAR_LENGTH(outstanding_amt) AS outstanding_amt_len,
+       CHAR_LENGTH(phone_no) AS phone_len,
+       CHAR_LENGTH(agent_code) AS agent_code_len
+FROM customer;
+
+SELECT *, 
+       CHAR_LENGTH(ord_num) AS ord_no_len,
+       CHAR_LENGTH(ord_amount) AS amt_len,
+       CHAR_LENGTH(advance_amount) AS adv_amt_len,
+       CHAR_LENGTH(ord_date) AS date_len,
+       CHAR_LENGTH(cust_code) AS cust_code_len,
+       CHAR_LENGTH(agent_code) AS agent_code_len,
+       CHAR_LENGTH(ord_description) AS description_len
+FROM orders;
+
 -- count rows with padded text
 -- CHAR_LENGTH is used because MySQL ignores trailing spaces in '=' and '<>'
 SELECT
-  SUM(CHAR_LENGTH(agent_code) <> CHAR_LENGTH(TRIM(agent_code))) AS code_padded,
-  SUM(CHAR_LENGTH(agent_name) <> CHAR_LENGTH(TRIM(agent_name))) AS name_padded,
-  SUM(CHAR_LENGTH(working_area) <> CHAR_LENGTH(TRIM(working_area))) AS area_padded,
-  SUM(CHAR_LENGTH(phone_no) <> CHAR_LENGTH(TRIM(phone_no))) AS phone_padded
+SUM(CHAR_LENGTH(agent_code) <> CHAR_LENGTH(TRIM(agent_code))) AS code_padded,
+SUM(CHAR_LENGTH(agent_name) <> CHAR_LENGTH(TRIM(agent_name))) AS name_padded,
+SUM(CHAR_LENGTH(working_area) <> CHAR_LENGTH(TRIM(working_area))) AS area_padded,
+SUM(CHAR_LENGTH(phone_no) <> CHAR_LENGTH(TRIM(phone_no))) AS phone_padded
 FROM agents;
+
+SELECT
+SUM(CHAR_LENGTH(cust_code) <> CHAR_LENGTH(TRIM(cust_code))) AS code_padded,
+SUM(CHAR_LENGTH(cust_name) <> CHAR_LENGTH(TRIM(cust_name))) AS name_padded,
+SUM(CHAR_LENGTH(cust_city) <> CHAR_LENGTH(TRIM(cust_city))) AS city_padded,
+SUM(CHAR_LENGTH(working_area) <> CHAR_LENGTH(TRIM(working_area))) AS area_padded,
+SUM(CHAR_LENGTH(cust_country) <> CHAR_LENGTH(TRIM(cust_country))) AS cust_country_padded,
+SUM(CHAR_LENGTH(phone_no) <> CHAR_LENGTH(TRIM(phone_no))) AS phone_no_padded,
+SUM(CHAR_LENGTH(agent_code) <> CHAR_LENGTH(TRIM(agent_code))) AS agent_code_padded
+FROM customer;
+
+SELECT
+SUM(CHAR_LENGTH(cust_code) <> CHAR_LENGTH(TRIM(cust_code))) AS cust_code_padded,
+SUM(CHAR_LENGTH(agent_code) <> CHAR_LENGTH(TRIM(agent_code))) AS agent_code_padded
+FROM orders;
 
 -- Workbench blocks UPDATE without a key in WHERE, so disable safe mode for cleaning
 SET SQL_SAFE_UPDATES = 0;
@@ -85,18 +125,6 @@ WHERE phone_no NOT REGEXP '^[0-9]{3}-[0-9]{8}$';
 SET SQL_SAFE_UPDATES = 1;
 
 -- Verify cleaning: padded rows remaining (expected: all 0)
-SELECT 'agents.agent_code' AS col_name, COUNT(*) AS padded_rows
-FROM agents WHERE CHAR_LENGTH(agent_code) <> CHAR_LENGTH(TRIM(agent_code))
-UNION ALL
-SELECT 'customer.cust_city', COUNT(*)
-FROM customer WHERE CHAR_LENGTH(cust_city) <> CHAR_LENGTH(TRIM(cust_city))
-UNION ALL
-SELECT 'customer.agent_code', COUNT(*)
-FROM customer WHERE CHAR_LENGTH(agent_code) <> CHAR_LENGTH(TRIM(agent_code))
-UNION ALL
-SELECT 'orders.agent_code', COUNT(*)
-FROM orders WHERE CHAR_LENGTH(agent_code) <> CHAR_LENGTH(TRIM(agent_code))
-UNION ALL
 SELECT 'orders.ord_description (CR)', COUNT(*)
 FROM orders WHERE ord_description LIKE CONCAT('%', CHAR(13), '%');
 
@@ -141,8 +169,7 @@ FROM orders
 GROUP BY ord_num
 HAVING COUNT(*) > 1;
 
-SELECT cust_code, agent_code, ord_date, ord_amount,
-       COUNT(*) AS cnt 
+SELECT cust_code, agent_code, ord_date, ord_amount, COUNT(*) AS cnt 
 FROM orders
 GROUP BY cust_code, agent_code, ord_date, ord_amount
 HAVING COUNT(*) > 1;
@@ -196,6 +223,15 @@ LIMIT 3;
 SELECT COUNT(*) AS total_customers FROM customer;
 
 -- 3.2 Identify the top-spending customers based on their total order value
+SELECT c.cust_code, c.cust_name, SUM(o.ord_amount) AS total_spent
+FROM customer c
+JOIN orders o
+ON c.cust_code = o.cust_code
+GROUP BY c.cust_code, c.cust_name
+ORDER BY total_spent DESC
+LIMIT 5;
+
+-- Now what if there will be any same total spent value of multiple customers, it will be a tie so to fix this we will use rank() window function
 SELECT cust_code, cust_name, total_spent, spend_rank
 FROM
 	(SELECT c.cust_code, c.cust_name, SUM(o.ord_amount) AS total_spent, RANK() OVER(ORDER BY SUM(o.ord_amount) DESC) AS spend_rank
@@ -219,23 +255,27 @@ FROM (
 -- 3.4 customer with maximum outstanding amount in each country
 SELECT cust_name, cust_country, outstanding_amt
 FROM(	
-SELECT cust_name, cust_country, outstanding_amt, RANK() OVER(PARTITION BY cust_country ORDER BY outstanding_amt DESC) AS rnk
-FROM customer) t
+	SELECT cust_name, cust_country, outstanding_amt, RANK() OVER(PARTITION BY cust_country ORDER BY outstanding_amt DESC) AS rnk
+	FROM customer) t
 WHERE rnk = 1
 ORDER BY cust_country, cust_name;
 
 -- 3.5 percentage of customers in each grade category (1 to 5). 
+SELECT grade, COUNT(*) AS customers, ROUND(100 * COUNT(*) / (SELECT COUNT(*) FROM customer), 2) AS pct_of_customers
+FROM customer
+WHERE grade BETWEEN 1 AND 5
+GROUP BY grade
+ORDER BY grade;
+
 WITH RECURSIVE grades AS (
     SELECT 1 AS grade
     UNION ALL
     SELECT grade + 1 FROM grades WHERE grade < 5
 )
-SELECT g.grade,
-       COUNT(c.cust_code) AS customers,
-       ROUND(100 * COUNT(c.cust_code) / (SELECT COUNT(*) FROM customer), 2) AS pct_of_customers
+SELECT g.grade, COUNT(c.cust_code) AS customers, ROUND(100 * COUNT(c.cust_code) / (SELECT COUNT(*) FROM customer), 2) AS pct_of_customers
 FROM grades g
 LEFT JOIN customer c
-  ON c.grade = g.grade
+ON c.grade = g.grade
 GROUP BY g.grade
 ORDER BY g.grade;
 -- Note: grades 4 and 5 do not exist in the data, so they show 0%.
@@ -246,10 +286,7 @@ ORDER BY g.grade;
 -- 4.1 Top 5 agents by total order amount (performance bonus)
 SELECT agent_code, agent_name, total_order_amount, amount_rank
 FROM (
-    SELECT a.agent_code,
-           a.agent_name,
-           SUM(o.ord_amount) AS total_order_amount,
-           RANK() OVER (ORDER BY SUM(o.ord_amount) DESC) AS amount_rank
+    SELECT a.agent_code, a.agent_name, SUM(o.ord_amount) AS total_order_amount, RANK() OVER (ORDER BY SUM(o.ord_amount) DESC) AS amount_rank
     FROM agents a
     JOIN orders o
 	ON a.agent_code = o.agent_code
@@ -261,10 +298,7 @@ ORDER BY amount_rank, agent_name;
 -- 4.2 Rank agents by number of orders handled
 SELECT agent_code, agent_name, total_order_count, order_rank
 FROM (
-    SELECT a.agent_code,
-           a.agent_name,
-           COUNT(o.ord_num) AS total_order_count,
-           DENSE_RANK() OVER (ORDER BY COUNT(o.ord_num) DESC) AS order_rank
+    SELECT a.agent_code, a.agent_name, COUNT(o.ord_num) AS total_order_count, DENSE_RANK() OVER (ORDER BY COUNT(o.ord_num) DESC) AS order_rank
     FROM agents a
     LEFT JOIN orders o
 	ON a.agent_code = o.agent_code
