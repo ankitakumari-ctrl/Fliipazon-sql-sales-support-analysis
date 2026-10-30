@@ -12,9 +12,9 @@ USE interview;
 SHOW TABLES;
 
 SELECT TABLE_NAME, ORDINAL_POSITION AS col_no, COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY
-FROM   information_schema.COLUMNS
-WHERE  TABLE_SCHEMA = 'interview'
-ORDER  BY TABLE_NAME, ORDINAL_POSITION;
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = 'interview'
+ORDER BY TABLE_NAME, ORDINAL_POSITION;
 
 -- 1.2 Record count per table  (expected: agents 12, customer 25, orders 36)
 SELECT 'agents' as table_name, COUNT(*) AS row_count FROM agents
